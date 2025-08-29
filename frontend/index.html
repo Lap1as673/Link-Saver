@@ -84,7 +84,6 @@
 <body>
     <h1>📚 Мой список ссылок</h1>
     
-    <!-- Форма добавления ссылки -->
     <div class="form">
         <h2>➕ Добавить новую ссылку</h2>
         <input type="url" id="url" placeholder="Введите URL (например: https://example.com)" required>
@@ -93,7 +92,6 @@
         <button onclick="addLink()">Сохранить ссылку</button>
     </div>
     
-    <!-- Список ссылок -->
     <div id="links">
         <h2>📋 Мои сохранённые ссылки</h2>
         <div id="linksList"></div>
@@ -102,10 +100,8 @@
     <script>
         const API_URL = 'http://localhost:8000';
         
-        // Загружаем ссылки при загрузке страницы
         window.onload = loadLinks;
         
-        // Функция загрузки всех ссылок
         async function loadLinks() {
             try {
                 const response = await fetch(`${API_URL}/links/`);
@@ -118,7 +114,6 @@
             }
         }
         
-        // Показать ссылки на странице
         function showLinks(links) {
             const linksList = document.getElementById('linksList');
             
@@ -142,7 +137,6 @@
             });
         }
         
-        // Добавить новую ссылку
         async function addLink() {
             const url = document.getElementById('url').value;
             const title = document.getElementById('title').value;
@@ -167,12 +161,10 @@
                 });
                 
                 if (response.ok) {
-                    // Очищаем форму
                     document.getElementById('url').value = '';
                     document.getElementById('title').value = '';
                     document.getElementById('description').value = '';
                     
-                    // Обновляем список
                     loadLinks();
                     alert('Ссылка успешно добавлена!');
                 } else {
@@ -185,7 +177,6 @@
             }
         }
         
-        // Удалить ссылку
         async function deleteLink(id) {
             if (!confirm('Удалить эту ссылку?')) {
                 return;
@@ -209,7 +200,6 @@
             }
         }
         
-        // Можно добавлять по Enter
         document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 addLink();

@@ -6,21 +6,18 @@ from typing import List, Optional
 from . import models, schemas, crud
 from .database import engine, get_db
 
-# Создаем таблицы
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Link Saver API", version="1.0.0")
 
-# НАСТРОЙКА CORS - ДОБАВЬТЕ ЭТО
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Все адреса фронтенда
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # Разрешить все методы (GET, POST, etc.)
-    allow_headers=["*"],  # Разрешить все заголовки
+    allow_methods=["*"], 
+    allow_headers=["*"],  
 )
 
-# Остальной код без изменений...
 @app.post("/lists/", response_model=schemas.List)
 def create_list(list: schemas.ListCreate, db: Session = Depends(get_db)):
     return crud.create_list(db=db, list=list)
