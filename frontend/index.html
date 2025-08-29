@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Мои ссылки</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        
+        .form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .link {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .link h3 {
+            margin: 0;
+            color: #0066cc;
+        }
+        
+        .link a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        .link a:hover {
+            text-decoration: underline;
+        }
+        
+        .delete-btn {
+            background: #ff4444;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>📚 Мой список ссылок</h1>
+    
+    <!-- Форма добавления ссылки -->
+    <div class="form">
+        <h2>➕ Добавить новую ссылку</h2>
+        <input type="url" id="url" placeholder="Введите URL (например: https://example.com)" required>
+        <input type="text" id="title" placeholder="Название ссылки" required>
+        <textarea id="description" placeholder="Описание (необязательно)" rows="3"></textarea>
+        <button onclick="addLink()">Сохранить ссылку</button>
+    </div>
+    
+    <!-- Список ссылок -->
+    <div id="links">
+        <h2>📋 Мои сохранённые ссылки</h2>
+        <div id="linksList"></div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        // Загружаем ссылки при загрузке страницы
+        window.onload = loadLinks;
+        
+        // Функция загрузки всех ссылок
+        async function loadLinks() {
+            try {
+                const response = await fetch(`${API_URL}/links/`);
+                const links = await response.json();
+                showLinks(links);
+            } catch (error) {
+                console.log('Ошибка загрузки:', error);
+                document.getElementById('linksList').innerHTML = 
+                    '<p>Не удалось загрузить ссылки. Проверьте, запущен ли сервер.</p>';
+            }
+        }
+        
+        // Показать ссылки на странице
+        function showLinks(links) {
+            const linksList = document.getElementById('linksList');
+            
+            if (links.length === 0) {
+                linksList.innerHTML = '<p>Пока нет сохранённых ссылок. Добавьте первую!</p>';
+                return;
+            }
+            
+            linksList.innerHTML = '';
+            
+            links.forEach(link => {
+                const linkElement = document.createElement('div');
+                linkElement.className = 'link';
+                linkElement.innerHTML = `
+                    <h3><a href="${link.url}" target="_blank">${link.title}</a></h3>
+                    <p>${link.description || 'Без описания'}</p>
+                    <p><small>URL: ${link.url}</small></p>
+                    <button class="delete-btn" onclick="deleteLink(${link.id})">Удалить</button>
+                `;
+                linksList.appendChild(linkElement);
+            });
+        }
+        
+        // Добавить новую ссылку
+        async function addLink() {
+            const url = document.getElementById('url').value;
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            
+            if (!url || !title) {
+                alert('Пожалуйста, заполните URL и название');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/links/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        title: title,
+                        description: description
+                    }),
+                });
+                
+                if (response.ok) {
+                    // Очищаем форму
+                    document.getElementById('url').value = '';
+                    document.getElementById('title').value = '';
+                    document.getElementById('description').value = '';
+                    
+                    // Обновляем список
+                    loadLinks();
+                    alert('Ссылка успешно добавлена!');
+                } else {
+                    alert('Ошибка при добавлении ссылки');
+                }
+                
+            } catch (error) {
+                console.log('Ошибка:', error);
+                alert('Не удалось добавить ссылку');
+            }
+        }
+        
+        // Удалить ссылку
+        async function deleteLink(id) {
+            if (!confirm('Удалить эту ссылку?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/links/${id}`, {
+                    method: 'DELETE',
+                });
+                
+                if (response.ok) {
+                    loadLinks();
+                    alert('Ссылка удалена');
+                } else {
+                    alert('Ошибка при удалении');
+                }
+                
+            } catch (error) {
+                console.log('Ошибка:', error);
+                alert('Не удалось удалить ссылку');
+            }
+        }
+        
+        // Можно добавлять по Enter
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addLink();
+            }
+        });
+    </script>
+</body>
+</html>
